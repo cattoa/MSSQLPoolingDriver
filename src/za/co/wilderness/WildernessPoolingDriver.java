@@ -241,6 +241,7 @@ public class WildernessPoolingDriver {
         return conn;
     }
     
+    
     public void shutdownDriver() throws Exception {
         PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
         boolean setServiceStatus = EXTERNAL_SERVICE_STATUS.setServiceStatus(EXTERNAL_SERVICE, ProcessingStatus.STOPPED);
