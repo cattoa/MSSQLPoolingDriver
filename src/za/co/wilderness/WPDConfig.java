@@ -10,7 +10,7 @@ package za.co.wilderness;
  * @author Allistair
  */
 public class WPDConfig {
-    private Integer maxActive = 100;
+    private Integer maxActive = 300;
     private Integer maxIdle = 50;
     private Integer minIdle = 10;
     private Integer maxWaitMillis = 10000;
