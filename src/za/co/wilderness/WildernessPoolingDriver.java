@@ -44,10 +44,10 @@ public class WildernessPoolingDriver {
     private WPDConfig config = new WPDConfig();
     private String connectURI = null;
     private final Properties properties = new Properties();
-    private ExternalService EXTERNAL_SERVICE;
+    private final ExternalService EXTERNAL_SERVICE;
     private static ExternalServiceStatus EXTERNAL_SERVICE_STATUS = new ExternalServiceStatus();
-    private Log log = LogFactory.getLog(WildernessPoolingDriver.class);
-    private Logger logger = Logger.getLogger("");
+    private final Log log = LogFactory.getLog(WildernessPoolingDriver.class);
+    private static final Logger logger = Logger.getLogger("");
     
     public WildernessPoolingDriver(String server, Integer port, String database, String user, String password, ExternalService externalService) throws Exception {
        this.connectURI = "jdbc:sqlserver://" + server ; 
@@ -229,6 +229,16 @@ public class WildernessPoolingDriver {
             PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
             ObjectPool<? extends Connection> connectionPool = driver.getConnectionPool(this.EXTERNAL_SERVICE.name());
             log.debug("NumActive: " + connectionPool.getNumActive() + "  NumIdle: " + connectionPool.getNumIdle());
+            System.out.println("NumActive: " + connectionPool.getNumActive() + "  NumIdle: " + connectionPool.getNumIdle());
+            if(connectionPool.getNumActive() == config.getMaxActive()){
+                config.setMaxActive(config.getMaxActive() + 50);
+                try{
+                    shutdownDriver();
+                }
+                catch(Exception e){
+                    log.debug(e);
+                }
+            }
             
             long endTime = System.currentTimeMillis();
             System.out.println("Total connection time: " + this.EXTERNAL_SERVICE.name() + " "  + (endTime - startTime) );
