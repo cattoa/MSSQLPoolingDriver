@@ -11,7 +11,8 @@ import java.sql.DriverManager;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
 
 import org.apache.commons.dbcp2.ConnectionFactory;
 import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
@@ -19,8 +20,7 @@ import org.apache.commons.dbcp2.PoolableConnection;
 import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import java.util.logging.Logger;
 
 //import com.mendix.core.component.InternalCore;
 //import com.mendix.logging.ILogNode;
@@ -46,8 +46,7 @@ public class WildernessPoolingDriver {
     private final Properties properties = new Properties();
     private final ExternalService EXTERNAL_SERVICE;
     private static ExternalServiceStatus EXTERNAL_SERVICE_STATUS = new ExternalServiceStatus();
-    private final Log log = LogFactory.getLog(WildernessPoolingDriver.class);
-    private static final Logger logger = Logger.getLogger("");
+    private static final Logger logger = Logger.getLogger( WildernessPoolingDriver.class.getName());
     
     public WildernessPoolingDriver(String server, Integer port, String database, String user, String password, ExternalService externalService) throws Exception {
        this.connectURI = "jdbc:sqlserver://" + server ; 
@@ -80,17 +79,15 @@ public class WildernessPoolingDriver {
 
     private void  PoolingDriver(String instance , Integer port, String database, String user, String password) throws Exception {
         //Setup connection string and properties
-        logger.setLevel(Level.ALL);
+        //logger.setLevel(Level.ALL);
         if (EXTERNAL_SERVICE_STATUS.getServiceStatus(EXTERNAL_SERVICE) == ProcessingStatus.STARTED){
             return;
         }
         if (EXTERNAL_SERVICE_STATUS.getServiceStatus(EXTERNAL_SERVICE) == ProcessingStatus.STARTING){
             Integer count = 0;
             while (EXTERNAL_SERVICE_STATUS.getServiceStatus(EXTERNAL_SERVICE) == ProcessingStatus.STARTING && count < 10){
-                System.out.println("Waiting for start: " + count.toString() ); 
-                if (log.isDebugEnabled()) {
-                    log.debug("Waiting for start: " + count.toString() );
-                }
+                //System.out.println("Waiting for start: " + count.toString() ); 
+                logger.log(Level.FINE, "Waiting for start: " + count.toString());
                 try {
                     Thread.sleep(100);
                 } catch (Exception e) {
@@ -104,10 +101,8 @@ public class WildernessPoolingDriver {
             if (!EXTERNAL_SERVICE_STATUS.setServiceStatus(EXTERNAL_SERVICE, ProcessingStatus.STARTING)){
                 Integer count = 0;
                 while (EXTERNAL_SERVICE_STATUS.getServiceStatus(EXTERNAL_SERVICE) == ProcessingStatus.STARTING && count < 10){
-                    System.out.println("Waiting for start: " + count.toString() ); 
-                    if (log.isDebugEnabled()) {
-                        log.debug("Waiting for start: " + count.toString());
-                    } 
+                    //System.out.println("Waiting for start: " + count.toString() ); 
+                    logger.log(Level.FINE, "Waiting for start: " + count.toString());
                     try{
                         Thread.sleep(100);
                     }
@@ -145,16 +140,16 @@ public class WildernessPoolingDriver {
     private void InitialisePooling() throws Exception{
         try{
             
-            System.out.println("Starting Wilderness Pooling ...");
-            log.info("Starting Wilderness Pooling for " + this.EXTERNAL_SERVICE.name());
+            //System.out.println("Starting Wilderness Pooling ...");
+            logger.log(Level.INFO, "Starting Wilderness Pooling for " + this.EXTERNAL_SERVICE.name());
              
             setupDriver();
-            System.out.println("Wilderness Pooling successfully initailised");
-            log.info("Wilderness Pooling successfully initailised for " + this.EXTERNAL_SERVICE.name());
+            //System.out.println("Wilderness Pooling successfully initailised");
+            logger.log(Level.INFO, "Wilderness Pooling successfully initailised for " + this.EXTERNAL_SERVICE.name());
         }
         catch (Exception ex){
-            System.out.println("Wilderness Pooling initailised failed. " + ex.getMessage());
-            log.error("Wilderness Pooling initailised failed. ", ex);
+            //System.out.println("Wilderness Pooling initailised failed. " + ex.getMessage());
+            logger.log(Level.SEVERE,"Wilderness Pooling initailised failed. ", ex);
             throw ex;
         }
     } 
@@ -166,8 +161,8 @@ public class WildernessPoolingDriver {
             java.lang.Class.forName(jdbcDriverName).newInstance();
           }
          catch (  ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-            System.out.println("Error when attempting to obtain DB Driver: " + jdbcDriverName + " on "+ new Date().toString() + e.getMessage());
-            log.error("Error when attempting to obtain DB Driver: " + jdbcDriverName + " on "+ new Date().toString(),e);
+            //System.out.println("Error when attempting to obtain DB Driver: " + jdbcDriverName + " on "+ new Date().toString() + e.getMessage());
+            logger.log(Level.SEVERE,"Error when attempting to obtain DB Driver: " + jdbcDriverName + " on "+ new Date().toString(),e);
             throw new Exception(e);
           }
         
@@ -202,8 +197,8 @@ public class WildernessPoolingDriver {
         //
         Class.forName("org.apache.commons.dbcp2.PoolingDriver");
         PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
-        System.out.println("Driver : " + driver.toString());
-        log.debug("Driver : " + driver.toString());
+        //System.out.println("Driver : " + driver.toString());
+        logger.log(Level.FINE, "Driver : " + driver.toString());
 
         
 
@@ -228,24 +223,24 @@ public class WildernessPoolingDriver {
             conn = DriverManager.getConnection("jdbc:apache:commons:dbcp:" + this.EXTERNAL_SERVICE.name());
             PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
             ObjectPool<? extends Connection> connectionPool = driver.getConnectionPool(this.EXTERNAL_SERVICE.name());
-            log.debug("NumActive: " + connectionPool.getNumActive() + "  NumIdle: " + connectionPool.getNumIdle());
-            System.out.println("NumActive: " + connectionPool.getNumActive() + "  NumIdle: " + connectionPool.getNumIdle());
+            logger.log(Level.FINE, "NumActive: " + connectionPool.getNumActive() + " NumIdle: " + connectionPool.getNumIdle());
+            //System.out.println("NumActive: " + connectionPool.getNumActive() + "  NumIdle: " + connectionPool.getNumIdle());
             if(connectionPool.getNumActive() == config.getMaxActive()){
                 config.setMaxActive(config.getMaxActive() + 50);
                 try{
                     shutdownDriver();
                 }
                 catch(Exception e){
-                    log.debug(e);
+                    logger.log(Level.FINE,e.getMessage());
                 }
             }
             
             long endTime = System.currentTimeMillis();
-            System.out.println("Total connection time: " + this.EXTERNAL_SERVICE.name() + " "  + (endTime - startTime) );
-            log.debug("Open connection for " + this.EXTERNAL_SERVICE.name());
+            //System.out.println("Total connection time: " + this.EXTERNAL_SERVICE.name() + " "  + (endTime - startTime) );
+            logger.log(Level.FINE, "Open connection for " + this.EXTERNAL_SERVICE.name());
         } catch(SQLException e) {
-            System.out.println("Create connection failed. " + e.getMessage());
-            log.error("Create connection failed. ", e);
+            //System.out.println("Create connection failed. " + e.getMessage());
+            logger.log(Level.SEVERE,"Create connection failed. ", e);
             throw new Exception(e);
         }
         return conn;
@@ -256,6 +251,6 @@ public class WildernessPoolingDriver {
         PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
         boolean setServiceStatus = EXTERNAL_SERVICE_STATUS.setServiceStatus(EXTERNAL_SERVICE, ProcessingStatus.STOPPED);
         driver.closePool(this.EXTERNAL_SERVICE.name());
-        log.info("Pooling driver shutdown for " + this.EXTERNAL_SERVICE.name());
+        logger.log(Level.FINE, "Pooling driver shutdown for " + this.EXTERNAL_SERVICE.name());
     }
 }

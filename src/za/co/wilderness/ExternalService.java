@@ -13,6 +13,9 @@ public enum ExternalService {
     TOURPLAN_PAF,
     TOURPLAN_BW,
     TOURPLAN_NA,
+    LOCALPRICING_PAF,
+    LOCALPRICING_BW,
+    LOCALPRICING_NA,
     WISH,
     WORKBENCH
     
